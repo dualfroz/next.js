@@ -283,7 +283,7 @@ describe('Image Optimizer', () => {
   })
 
   // Development responses use max-age=0 rather than the production cache lifetime.
-  // @gate start
+  // @force-gate start
   describe('Server support for headers in next.config.js', () => {
     const size = 96
     const { next, skipped } = nextTestSetup({
