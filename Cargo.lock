@@ -9134,6 +9134,7 @@ dependencies = [
  "tempfile",
  "thread_local",
  "tracing",
+ "turbo-bitset",
  "turbo-tasks-malloc",
  "xxhash-rust",
  "zerocopy",
