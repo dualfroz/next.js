@@ -282,11 +282,9 @@ describe('Image Optimizer', () => {
     })
   })
 
-  // Development responses use max-age=0 rather than the production cache lifetime.
-  // @force-gate start
   describe('Server support for headers in next.config.js', () => {
     const size = 96
-    const { next, skipped } = nextTestSetup({
+    const { next, skipped, isNextDev } = nextTestSetup({
       files: join(__dirname, 'app'),
     })
     if (skipped) return
@@ -324,13 +322,13 @@ describe('Image Optimizer', () => {
       const res = await next.fetch(`/_next/image?${toQueryString(query)}`, opts)
       expect(res.status).toBe(200)
       expect(res.headers.get('Cache-Control')).toBe(
-        'public, max-age=14400, must-revalidate'
+        `public, max-age=${isNextDev ? 0 : 14400}, must-revalidate`
       )
       expect(res.headers.get('Content-Disposition')).toBe(
         'attachment; filename="test.webp"'
       )
 
-      const imagesDir = join(next.testDir, '.next', 'cache', 'images')
+      const imagesDir = join(next.testDir, next.distDir, 'cache', 'images')
       await check(async () => {
         const files = await fsToJson(imagesDir)
         let found = false
@@ -352,7 +350,7 @@ describe('Image Optimizer', () => {
       const res = await next.fetch(`/_next/image?${toQueryString(query)}`, opts)
       expect(res.status).toBe(200)
       expect(res.headers.get('Cache-Control')).toBe(
-        'public, max-age=14400, must-revalidate'
+        `public, max-age=${isNextDev ? 0 : 14400}, must-revalidate`
       )
       expect(res.headers.get('Content-Disposition')).toBe(
         'attachment; filename="test.webp"'
@@ -416,10 +414,8 @@ describe('Image Optimizer', () => {
     })
   })
 
-  // Development responses use max-age=0 rather than the production cache lifetime.
-  // @gate start
   describe('External rewrite support with for serving static content in images', () => {
-    const { next, skipped } = nextTestSetup({
+    const { next, skipped, isNextDev } = nextTestSetup({
       files: join(__dirname, 'app'),
       nextConfig: {
         async rewrites() {
@@ -436,7 +432,7 @@ describe('Image Optimizer', () => {
     if (skipped) return
 
     it('should return response when image is served from an external rewrite', async () => {
-      const imagesDir = join(next.testDir, '.next', 'cache', 'images')
+      const imagesDir = join(next.testDir, next.distDir, 'cache', 'images')
       await cleanImagesDir(imagesDir)
 
       const query = { url: '/next-js/next-js-bg.png', w: 64, q: 75 }
@@ -445,7 +441,7 @@ describe('Image Optimizer', () => {
       expect(res.status).toBe(200)
       expect(res.headers.get('Content-Type')).toBe('image/webp')
       expect(res.headers.get('Cache-Control')).toBe(
-        'public, max-age=31536000, must-revalidate'
+        `public, max-age=${isNextDev ? 0 : 31536000}, must-revalidate`
       )
       expect(res.headers.get('Vary')).toBe('Accept')
       expect(res.headers.get('Content-Disposition')).toBe(
